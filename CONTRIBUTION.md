@@ -11,5 +11,5 @@ helm plugin install https://github.com/helm-unittest/helm-unittest.git
 
 Run:
 ```shell
-helm unittest .
+helm unittest ./charts/general
 ```
