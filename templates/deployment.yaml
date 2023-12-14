@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "general.fullname" . }}
+  labels:
+    {{- include "general.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "general.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "general.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range $k, $v := . }}
+        - name: {{ $k }}
+        {{- end }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: '{{ required "Value image.repository is required!" .Values.image.repository }}:{{ .Values.image.tag | default "latest" }}'
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.ports }}
+          ports:
+          {{- range $k, $v := . }}
+            - name: {{ $k | quote }}
+              containerPort: {{ $v.port }}
+              protocol: {{ $v.protocol | default "TCP" }}
+          {{- end }}
+          {{- end }}
+          {{- with .Values.env }}
+          env:
+          {{- range $k, $v := . }}
+            - name: {{ $k }}
+              {{- if and (kindIs "map" $v) $v.valueFrom }}
+              valueFrom:
+                {{- toYaml .valueFrom | nindent 16 }}
+              {{- else }}
+              value: {{ $v | quote }}
+              {{- end }}
+          {{- end }}
+          {{- end }}
+          {{- with coalesce .Values.livenessProbe .Values.probe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with coalesce .Values.readinessProbe .Values.probe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}

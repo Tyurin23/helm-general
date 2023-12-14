@@ -1,0 +1,44 @@
+suite: test nginx deployment
+templates:
+  - deployment.yaml
+tests:
+  - it: w/o image.repository
+    asserts:
+      - failedTemplate:
+          errorMessage: Value image.repository is required!
+
+  - it: deployment should render
+    set:
+      image:
+        repository: nginx
+    asserts:
+      - isKind:
+          of: Deployment
+      - hasDocuments:
+          count: 1
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: 'nginx:latest'
+
+  - it: probe
+    set:
+      image:
+        repository: nginx
+      probe:
+        httpGet:
+          path: /
+          port: http
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].livenessProbe
+          value:
+            httpGet:
+              path: /
+              port: http
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe
+          value:
+            httpGet:
+              path: /
+              port: http
+

@@ -1,0 +1,17 @@
+image:
+  repository:
+  tag: latest
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  enabled: true
+  type: ClusterIP
+
+autoscaling:
+  enabled: false

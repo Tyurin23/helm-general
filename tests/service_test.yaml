@@ -1,0 +1,64 @@
+suite: Service
+templates:
+  - service.yaml
+tests:
+  - it: w/o ports
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: empty ports
+    set:
+      ports: []
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: Single port
+    set:
+      ports:
+        api:
+          port: 8080
+          nodePort: 3333
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: Service
+      - equal:
+          path: spec.type
+          value: 'ClusterIP'
+      - equal:
+          path: spec.ports[0]
+          value:
+            port: 8080
+            name: api
+            protocol: TCP
+            targetPort: api
+
+  - it: NodePort type
+    set:
+      service:
+        type: NodePort
+      ports:
+        api:
+          port: 8080
+          nodePort: 3333
+    asserts:
+      - equal:
+          path: spec.type
+          value: 'NodePort'
+      - equal:
+          path: spec.ports[0].nodePort
+          value: 3333
+
+  - it: Disabled
+    set:
+      service:
+        enabled: false
+      ports:
+        api:
+          port: 8080
+    asserts:
+      - hasDocuments:
+          count: 0
