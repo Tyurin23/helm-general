@@ -1,0 +1,13 @@
+apiVersion: v1
+entries:
+  general:
+  - apiVersion: v2
+    created: "2023-12-14T16:48:53.163383628Z"
+    description: Universal chart for simple apps
+    digest: 4b516c66fd9c04f7c99bb32effa5bd7f887cbef17be4eb35d3ffdd04e7d173a3
+    name: general
+    type: application
+    urls:
+    - https://github.com/Tyurin23/helm-general/releases/download/general-0.1.0/general-0.1.0.tgz
+    version: 0.1.0
+generated: "2023-12-14T16:48:53.163411711Z"
