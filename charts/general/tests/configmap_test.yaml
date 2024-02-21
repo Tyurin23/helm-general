@@ -1,0 +1,54 @@
+suite: Configmap
+templates:
+  - configmap.yaml
+set:
+  image:
+    repository: nginx
+tests:
+  - it: w/o configmap
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: data
+    set:
+      configmap:
+        first:
+          data:
+            param: value
+            config.ini: |+
+              param=value
+    asserts:
+      - hasDocuments:
+          count: 1
+      - equal:
+          path: metadata.name
+          value: first
+      - equal:
+          path: data["config.ini"]
+          value: |+
+            param=value
+      - equal:
+          path: data.param
+          value: value
+
+  - it: two configmaps
+    documentIndex: 1
+    set:
+      configmap:
+        first:
+          data:
+            config.ini: |+
+              param=value
+        second:
+          data:
+            port: 123
+    asserts:
+      - hasDocuments:
+          count: 2
+      - equal:
+          path: metadata.name
+          value: second
+      - equal:
+          path: data.port
+          value: 123

@@ -13,6 +13,18 @@ helm upgrade \
   reverse-proxy .
 ```
 
+### Resources
+
+```yaml
+resources:
+  requests:
+    memory: "64Mi"
+    cpu: "250m"
+  limits:
+    memory: "128Mi"
+    cpu: "500m"
+```
+
 ### Probes
 
 ```yaml

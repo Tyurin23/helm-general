@@ -1,4 +1,4 @@
-suite: test nginx deployment
+suite: Deployment
 templates:
   - deployment.yaml
 tests:
@@ -19,6 +19,101 @@ tests:
       - equal:
           path: spec.template.spec.containers[0].image
           value: 'nginx:latest'
+
+  - it: image
+    set:
+      image:
+        repository: nginx
+        tag: 1.23
+        pullPolicy: Always
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: nginx:1.23
+      - equal:
+          path: spec.template.spec.containers[0].imagePullPolicy
+          value: Always
+
+  - it: ports
+    set:
+      image:
+        repository: nginx
+      ports:
+        api:
+          port: 8080
+        management:
+          port: 9000
+          protocol: UDP
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].ports[0]
+          value:
+            containerPort: 8080
+            name: api
+            protocol: TCP
+      - equal:
+          path: spec.template.spec.containers[0].ports[1]
+          value:
+            containerPort: 9000
+            name: management
+            protocol: UDP
+
+  - it: resources
+    set:
+      image:
+        repository: nginx
+      resources:
+        requests:
+          memory: 64Mi
+          cpu: 250m
+        limits:
+          memory: 128Mi
+          cpu: 500m
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].resources
+          value:
+            requests:
+              memory: 64Mi
+              cpu: 250m
+            limits:
+              memory: 128Mi
+              cpu: 500m
+
+  - it: configmap volumeMount
+    set:
+      image:
+        repository: nginx
+      configmap:
+        first:
+          path: /etc/app
+          data:
+            config.ini: |+
+              param=value
+        second:
+          data:
+            param: 1
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].volumeMounts[0]
+          value:
+            mountPath: /etc/app
+            name: cm-first
+      - equal:
+          path: spec.template.spec.volumes[0]
+          value:
+            name: "cm-first"
+            configMap:
+              name: "first"
+      - equal:
+          path: spec.template.spec.volumes[1]
+          value:
+            name: "cm-second"
+            configMap:
+              name: "second"
+
+
+
 
   - it: probe
     set:
