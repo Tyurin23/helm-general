@@ -1,0 +1,42 @@
+image:
+  repository: nginx
+  tag: 1.24.0
+
+ports:
+  http:
+    port: 80
+    nodePort: 33044
+
+resources:
+  requests:
+    memory: 64Mi
+    cpu: 250m
+  limits:
+    memory: 128Mi
+    cpu: 500m
+
+probe:
+  httpGet:
+    path: /_healthcheck
+    port: http
+
+configmap:
+  nginx:
+    path: /etc/nginx
+    data:
+      nginx.conf: |+
+        user nginx;
+        worker_processes auto;
+        events {
+          worker_connections  1024;
+        }
+        http {
+          server {
+              listen 80;
+              location /_healthcheck {
+                  access_log off;
+                  add_header 'Content-Type' 'application/json';
+                  return 200 '{"status":"UP"}';
+              }
+          }
+        }

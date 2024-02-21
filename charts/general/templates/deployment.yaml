@@ -61,3 +61,35 @@ spec:
           readinessProbe:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+          {{- if .Values.volumes }}
+          {{- range $k, $v := .Values.volumes }}
+            - name: {{ $k | quote }}
+              mountPath: {{ required "Parameter volumes.name.path required" $v.path }}
+          {{- end }}
+          {{- end }}
+          {{- if .Values.configmap }}
+          {{- range $k, $v := .Values.configmap }}
+          {{- if $v.path }}
+            - name: {{ printf "cm-%s" $k | quote }}
+              mountPath: {{ $v.path }}
+          {{- end }}
+          {{- end }}
+          {{- end }}
+      volumes:
+        {{- range $k, $v := .Values.volumes }}
+        - name: {{ $k | quote }}
+          persistentVolumeClaim:
+          {{- if $v.claimName}}
+            claimName: {{ $v.claimName | quote }}
+          {{- end }}
+        {{- end -}}
+        {{- range $k, $v := .Values.configmap }}
+        - name: {{ printf "cm-%s" $k | quote }}
+          configMap:
+            name: {{ $k | quote }}
+        {{- end -}}
